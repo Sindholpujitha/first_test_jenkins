@@ -1,1 +1,30 @@
-hi
+pipeline {
+    agent any
+    stages{
+       stage('Creating vars file')
+                {
+                        steps {
+                                dir("/var/jenkins_home/workspace/Continuous_Integration/${JOB_NAME}/scripts/python/")
+                                {
+                                  sh "/usr/bin/python3 create_yml.py ${currentBuild.number} ${JOB_NAME}"
+                                }
+                 }
+
+            }
+        stage('Trigger playbook') {
+            steps {
+                 sh "docker exec ansible sh -c 'ansible-playbook --vault-password-file=/ansible_playbooks/ansible_configs/aws/vault_pass /ansible_playbooks/workspace/Continuous_Integration/${JOB_NAME}/Playbooks/${JOB_NAME}.yml -e job_name=${JOB_NAME} -e build_number=${currentBuild.number}'"
+    }
+        }
+        stage('Post action') {
+            steps {
+                echo 'Completed'
+            }
+        }
+    }
+    	post {
+        always {
+		         sh "docker exec ansible sh -c 'ansible-playbook --vault-password-file=/ansible_playbooks/ansible_configs/common/vault_pass /ansible_playbooks/workspace/Continuous_Integration/commonscripts/Playbooks/commonscripts.yml --extra-vars job_name=${JOB_NAME} --extra-vars build_number=${currentBuild.number}'"
+			}
+		}
+}
