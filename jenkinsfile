@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages{
-       stage('Creating vars files')
+       stage('Creating vars file')
                 {
                         steps {
                                 dir("/var/jenkins_home/workspace/Continuous_Integration/${JOB_NAME}/scripts/python/")
